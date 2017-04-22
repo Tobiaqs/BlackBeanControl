@@ -22,17 +22,16 @@ DeviceTimeout = ''
 AlternativeIPAddress = ''
 AlternativePort = ''
 AlternativeMACAddress = ''
-AlternativeTimeout = ''
 
 try:
-    Options, args = getopt.getopt(sys.argv[1:], 'c:d:r:i:p:m:t:h', ['command=','device=','rekey=','ipaddress=','port=','macaddress=','timeout=','help'])
+    Options, args = getopt.getopt(sys.argv[1:], 'c:d:r:i:p:m:h', ['command=','device=','rekey=','ipaddress=','port=','macaddress=','help'])
 except getopt.GetoptError:
-    print('BlackBeanControl.py -c <Command name> [-d <Device name>] [-i <IP Address>] [-p <Port>] [-m <MAC Address>] [-t <Timeout>] [-r <Re-Key Command>]')
+    print('BlackBeanControl.py -c <Command name> [-d <Device name>] [-i <IP Address>] [-p <Port>] [-m <MAC Address>] [-r <Re-Key Command>]')
     sys.exit(2)
 
 for Option, Argument in Options:
     if Option in ('-h', '--help'):
-        print('BlackBeanControl.py -c <Command name> [-d <Device name>] [-i <IP Address>] [-p <Port>] [-m <MAC Address>] [-t <Timeout> [-r <Re-Key Command>]')
+        print('BlackBeanControl.py -c <Command name> [-d <Device name>] [-i <IP Address>] [-p <Port>] [-m <MAC Address>] [-r <Re-Key Command>]')
         sys.exit()
     elif Option in ('-c', '--command'):
         SentCommand = Argument
@@ -47,18 +46,16 @@ for Option, Argument in Options:
         AlternativePort = Argument
     elif Option in ('-m', '--macaddress'):
         AlternativeMACAddress = Argument
-    elif Option in ('-t', '--timeout'):
-        AlternativeTimeout = Argument
 
 if SentCommand.strip() == '':
     print('Command name parameter is mandatory')
     sys.exit(2)
 
-if (DeviceName.strip() != '') and ((AlternativeIPAddress.strip() != '') or (AlternativePort.strip() != '') or (AlternativeMACAddress.strip() != '') or (AlternativeTimeout != '')):
+if (DeviceName.strip() != '') and ((AlternativeIPAddress.strip() != '') or (AlternativePort.strip() != '') or (AlternativeMACAddress.strip() != '')):
     print('Device name parameter can not be used in conjunction with IP Address/Port/MAC Address/Timeout parameters')
     sys.exit(2)
 
-if (((AlternativeIPAddress.strip() != '') or (AlternativePort.strip() != '') or (AlternativeMACAddress.strip() != '') or (AlternativeTimeout.strip() != '')) and ((AlternativeIPAddress.strip() == '') or (AlternativePort.strip() == '') or (AlternativeMACAddress.strip() == '') or (AlternativeTimeout.strip() == ''))):
+if (((AlternativeIPAddress.strip() != '') or (AlternativePort.strip() != '') or (AlternativeMACAddress.strip() != '')) and ((AlternativeIPAddress.strip() == '') or (AlternativePort.strip() == '') or (AlternativeMACAddress.strip() == ''))):
     print('IP Address, Port, MAC Address and Timeout parameters can not be used separately')
     sys.exit(2)
 
@@ -140,19 +137,6 @@ if RealMACAddress.strip() == '':
 else:
     RealMACAddress = netaddr.EUI(RealMACAddress)
 
-if DeviceName.strip() != '':
-    RealTimeout = DeviceTimeout.strip()
-elif AlternativeTimeout.strip() != '':
-    RealTimeout = AlternativeTimeout.strip()
-else:
-    RealTimeout = Settings.Timeout
-
-if RealTimeout.strip() == '':
-    print('Timeout must exist in BlackBeanControl.ini or it should be entered as a command line parameter')
-    sys.exit(2)
-else:
-    RealTimeout = int(RealTimeout.strip())    
-
 RM3Device = broadlink.rm((RealIPAddress, RealPort), RealMACAddress)
 RM3Device.auth()
 
@@ -193,12 +177,10 @@ if CommandFromSettings.strip() != '':
     RM3Device.send_data(DecodedCommand)
 else:
     RM3Device.enter_learning()
-    time.sleep(RealTimeout)
     LearnedCommand = RM3Device.check_data()
 
-    if LearnedCommand is None:
-        print('Command not received')
-        sys.exit()
+    while LearnedCommand is None:
+        LearnedCommand = RM3Device.check_data()
 
     EncodedCommand = LearnedCommand.encode('hex')
 
