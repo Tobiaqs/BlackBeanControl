@@ -18,7 +18,6 @@ DeviceName=''
 DeviceIPAddress = ''
 DevicePort = ''
 DeviceMACAddres = ''
-DeviceTimeout = ''
 AlternativeIPAddress = ''
 AlternativePort = ''
 AlternativeMACAddress = ''
@@ -52,11 +51,11 @@ if SentCommand.strip() == '':
     sys.exit(2)
 
 if (DeviceName.strip() != '') and ((AlternativeIPAddress.strip() != '') or (AlternativePort.strip() != '') or (AlternativeMACAddress.strip() != '')):
-    print('Device name parameter can not be used in conjunction with IP Address/Port/MAC Address/Timeout parameters')
+    print('Device name parameter can not be used in conjunction with IP Address/Port/MAC Address parameters')
     sys.exit(2)
 
 if (((AlternativeIPAddress.strip() != '') or (AlternativePort.strip() != '') or (AlternativeMACAddress.strip() != '')) and ((AlternativeIPAddress.strip() == '') or (AlternativePort.strip() == '') or (AlternativeMACAddress.strip() == ''))):
-    print('IP Address, Port, MAC Address and Timeout parameters can not be used separately')
+    print('IP Address, Port and MAC Address parameters can not be used separately')
     sys.exit(2)
 
 if DeviceName.strip() != '':
@@ -75,11 +74,6 @@ if DeviceName.strip() != '':
             DeviceMACAddress = SettingsFile.get(DeviceName.strip(), 'MACAddress')
         else:
             DeviceMACAddress = ''
-
-        if SettingsFile.has_option(DeviceName.strip(), 'Timeout'):
-            DeviceTimeout = SettingsFile.get(DeviceName.strip(), 'Timeout')
-        else:
-            DeviceTimeout = ''        
     else:
         print('Device does not exist in BlackBeanControl.ini')
         sys.exit(2)
@@ -95,10 +89,6 @@ if (DeviceName.strip() != '') and (DevicePort.strip() == ''):
 if (DeviceName.strip() != '') and (DeviceMACAddress.strip() == ''):
     print('MAC address must exist in BlackBeanControl.ini for the selected device')
     sys.exit(2)
-
-if (DeviceName.strip() != '') and (DeviceTimeout.strip() == ''):
-    print('Timeout must exist in BlackBeanControl.ini for the selected device')
-    sys.exit(2)    
 
 if DeviceName.strip() != '':
     RealIPAddress = DeviceIPAddress.strip()
